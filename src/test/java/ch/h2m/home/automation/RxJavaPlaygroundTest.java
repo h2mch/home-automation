@@ -3,12 +3,10 @@ package ch.h2m.home.automation;
 import org.junit.jupiter.api.Test;
 
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
+import ch.h2m.home.automation.entity.HueDimmerState;
 import io.reactivex.Observable;
 import io.reactivex.Single;
-import io.reactivex.schedulers.Schedulers;
 
 import static org.junit.jupiter.api.Assertions.*;
 

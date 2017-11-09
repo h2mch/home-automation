@@ -3,6 +3,8 @@ package ch.h2m.home.automation;
 import java.io.StringReader;
 import java.util.Calendar;
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import javax.json.Json;
 import javax.json.JsonObject;
@@ -12,32 +14,34 @@ import javax.ws.rs.client.ClientBuilder;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import ch.h2m.home.automation.entity.HueDimmerState;
+import io.reactivex.Observable;
+import io.reactivex.schedulers.Schedulers;
+
 public class HueService {
 
-    private Calendar prevLastUpdated;
-    private int lastButtonEvent;
+    public static Observable<String> hueObservable() {
+        Observable<String> sourceObsevable = Observable.interval(5, TimeUnit.SECONDS, Schedulers.io())
+                .map(tick -> HueService.currentState())
+                .doOnError(err -> System.err.println("Error retrieving hue messages"))
+                .retry()
+                .distinctUntilChanged()
+                .map(currentState -> currentState.getButtonEvent())
+                .filter(buttonEvent -> buttonEvent.equals(2002))
+                .map(switchIsPressed -> TimetableService.getNextTwoDepartureToBahnhof())
+                .map(calendar -> calendar
+                        .stream()
+                        .map(cal -> cal.toLocalTime().toString())
+                        .collect(Collectors.joining(", "))
+                );
+        return sourceObsevable;
+    }
 
-    public static HueDimmerState currentState(){
+    public static HueDimmerState currentState() {
         JsonObject dimmerObject = callHueDimmer();
         int buttonEvent = dimmerObject.getJsonObject("state").getInt("buttonevent");
         Optional<Calendar> calendar = Converter.parseDate(dimmerObject.getJsonObject("state").getString("lastupdated"));
         return new HueDimmerState(buttonEvent, calendar.get());
-    }
-
-    public Optional<Integer> dimmerButtonPressed() {
-
-        JsonObject dimmerObject = callHueDimmer();
-
-        int buttonEvent = dimmerObject.getJsonObject("state").getInt("buttonevent");
-        Optional<Calendar> calendar = Converter.parseDate(dimmerObject.getJsonObject("state").getString("lastupdated"));
-
-        if (prevLastUpdated == null || (calendar.isPresent() && prevLastUpdated.before(calendar.get()))) {
-            lastButtonEvent = buttonEvent;
-            prevLastUpdated = calendar.get();
-            return Optional.of(buttonEvent);
-        }
-
-        return Optional.empty();
     }
 
     private static JsonObject callHueDimmer() {

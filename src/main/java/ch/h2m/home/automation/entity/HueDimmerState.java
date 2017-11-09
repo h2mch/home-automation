@@ -1,4 +1,4 @@
-package ch.h2m.home.automation;
+package ch.h2m.home.automation.entity;
 
 import java.util.Calendar;
 

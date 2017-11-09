@@ -1,6 +1,8 @@
 package ch.h2m.home.automation;
 
 import java.math.BigDecimal;
+import java.math.MathContext;
+import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
 import javax.json.JsonObject;
@@ -27,7 +29,9 @@ public class SmartMeService {
                 .flatMap(Observable::fromArray)
                 .map(obj -> (JsonObject) obj)
                 .filter(jsonObject -> deviceName.equalsIgnoreCase(jsonObject.getString("Name")))
-                .map(jsonObject -> jsonObject.getJsonNumber("Temperature").bigDecimalValue())
+                .filter(jsonObject -> jsonObject.containsKey("Temperature"))
+                .map(jsonObject -> jsonObject.getJsonNumber("Temperature"))
+                .map(jsonNumber -> jsonNumber.bigDecimalValue().setScale(0, RoundingMode.HALF_UP))
                 .distinct(); //Hashcode has to be implemented!
     }
 
