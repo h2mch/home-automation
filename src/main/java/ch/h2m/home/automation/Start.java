@@ -29,7 +29,7 @@ public class Start {
         );
 
         Disposable smartMeDisposableB = smartMeTemperatureB.subscribe(
-                messages -> System.out.println("Raumtemperatur für A ist " + messages + "°C")
+                messages -> System.out.println("Raumtemperatur für B ist " + messages + "°C")
         );
 
 
