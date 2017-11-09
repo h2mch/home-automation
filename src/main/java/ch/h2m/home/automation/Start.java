@@ -1,9 +1,6 @@
 package ch.h2m.home.automation;
 
 import java.math.BigDecimal;
-import java.util.Scanner;
-import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -11,9 +8,9 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
+import ch.h2m.home.automation.entity.HueLightState;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
 
 
 public class Start {
@@ -21,11 +18,19 @@ public class Start {
     public static void main(String[] args) throws InterruptedException {
 
         Observable<String> hueSwitchPressed = HueService.hueObservable();
+        Observable<HueLightState> hueLightIsOn = HueService.hueLightObservable();
         Observable<BigDecimal> smartMeTemperatureA = SmartMeService.smartMeObservable("A");
         Observable<BigDecimal> smartMeTemperatureB = SmartMeService.smartMeObservable("B");
 
         Disposable smartMeDisposableA = smartMeTemperatureA.subscribe(
                 messages -> System.out.println("Raumtemperatur für A ist " + messages + "°C")
+        );
+
+        Disposable hueLightIsOnDisposable = hueLightIsOn.subscribe(
+                stateChange -> System.out.println("State change")
+                // get the time from the statechange
+                // compare with the current time
+                // if difference > 1h switch of the light
         );
 
         Disposable smartMeDisposableB = smartMeTemperatureB.subscribe(
@@ -43,6 +48,7 @@ public class Start {
 
         System.out.println("Shutdown");
         hueSwitchSDisposable.dispose();
+        hueLightIsOnDisposable.dispose();
         smartMeDisposableA.dispose();
         smartMeDisposableB.dispose();
     }

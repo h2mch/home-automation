@@ -15,9 +15,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
 import ch.h2m.home.automation.entity.HueDimmerState;
+import ch.h2m.home.automation.entity.HueLightState;
 import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 
+/**
+ * https://developers.meethue.com/documentation/lights-api
+ */
 public class HueService {
 
     public static Observable<String> hueObservable() {
@@ -37,13 +41,6 @@ public class HueService {
         return sourceObsevable;
     }
 
-    public static HueDimmerState currentState() {
-        JsonObject dimmerObject = callHueDimmer();
-        int buttonEvent = dimmerObject.getJsonObject("state").getInt("buttonevent");
-        Optional<Calendar> calendar = Converter.parseDate(dimmerObject.getJsonObject("state").getString("lastupdated"));
-        return new HueDimmerState(buttonEvent, calendar.get());
-    }
-
     private static JsonObject callHueDimmer() {
         String hueBridgeUri = PropertyStore.getInstance().getValue("hue.bridge.uri");
         Client client = ClientBuilder.newClient();
@@ -60,6 +57,52 @@ public class HueService {
         try (JsonReader reader = Json.createReader(new StringReader(responseBody))) {
             return reader.readObject();
         }
+    }
+
+
+    public static HueDimmerState currentState() {
+        JsonObject dimmerObject = callHueDimmer();
+        int buttonEvent = dimmerObject.getJsonObject("state").getInt("buttonevent");
+        Optional<Calendar> calendar = Converter.parseDate(dimmerObject.getJsonObject("state").getString("lastupdated"));
+        return new HueDimmerState(buttonEvent, calendar.get());
+    }
+
+    private static JsonObject callHueLight(String lightNumber) {
+        String hueBridgeUri = PropertyStore.getInstance().getValue("hue.bridge.uri");
+        Client client = ClientBuilder.newClient();
+        Response response = client
+                .target(hueBridgeUri)
+                .path("lights")
+                .path(lightNumber)
+                .request()
+                .accept(MediaType.APPLICATION_JSON_TYPE)
+                .header("cache-control", "no-cache")
+                .get();
+
+        String responseBody = response.readEntity(String.class);
+
+        try (JsonReader reader = Json.createReader(new StringReader(responseBody))) {
+            return reader.readObject();
+        }
+    }
+
+    public static Boolean currentLightState(String name) {
+        JsonObject lightObject = callHueLight(name);
+        return lightObject.getJsonObject("state").getBoolean("on");
+    }
+
+    public static Observable<HueLightState> hueLightObservable() {
+        Observable<HueLightState> sourceObsevable = Observable.interval(60, TimeUnit.SECONDS, Schedulers.io())
+                .map(tick -> HueService.currentLightState("1"))
+                .doOnError(err -> System.err.println("Error retrieving hue messages"))
+                .retry()
+                .distinctUntilChanged()
+                .map(hh -> {
+                    System.out.println(hh);
+                    return hh;
+                })
+                .map(state -> new HueLightState(state));
+        return sourceObsevable;
     }
 
 
