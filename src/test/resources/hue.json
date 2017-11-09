@@ -1,0 +1,22 @@
+{
+  "state": {
+    "buttonevent": 2002,
+    "lastupdated": "2017-10-23T20:09:13"
+  },
+  "swupdate": {
+    "state": "noupdates",
+    "lastinstall": null
+  },
+  "config": {
+    "on": true,
+    "battery": 100,
+    "reachable": true,
+    "pending": []
+  },
+  "name": "Eingang",
+  "type": "ZLLSwitch",
+  "modelid": "RWL021",
+  "manufacturername": "Philips",
+  "swversion": "5.45.1.17846",
+  "uniqueid": "00:17:88:01:02:c0:46:5c-02-fc00"
+}

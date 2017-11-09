@@ -1,0 +1,22 @@
+[
+  {
+    "Id": "f6d90c00-3c96-403d-8c30-c8817274fd5e",
+    "Name": "A",
+    "Serial": 100525,
+    "DeviceEnergyType": 1,
+    "FamilyType": 1,
+    "ActivePower": 0.0,
+    "ActivePowerUnit": "kW",
+    "CounterReading": 1.056,
+    "CounterReadingUnit": "kWh",
+    "CounterReadingT1": 1.056,
+    "SwitchOn": false,
+    "Voltage": 229.5,
+    "VoltageL1": 229.5,
+    "Current": 0.0,
+    "PowerFactor": 0.0,
+    "PowerFactorL1": 0.0,
+    "Temperature": 21.85,
+    "ValueDate": "2017-10-23T20:51:33.5288283"
+  }
+]
