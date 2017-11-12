@@ -1,6 +1,7 @@
 package ch.h2m.home.automation;
 
 import java.math.BigDecimal;
+import java.time.Instant;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -8,7 +9,6 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import ch.h2m.home.automation.entity.HueLightState;
 import io.reactivex.Observable;
 import io.reactivex.disposables.Disposable;
 
@@ -17,40 +17,45 @@ public class Start {
 
     public static void main(String[] args) throws InterruptedException {
 
+        System.out.println(Instant.now().toString() + ": System is running");
+
         Observable<String> hueSwitchPressed = HueService.hueObservable();
-        Observable<HueLightState> hueLightIsOn = HueService.hueLightObservable();
+        Observable<Boolean> hueLightIsOn = HueService.hueLightObservable();
         Observable<BigDecimal> smartMeTemperatureA = SmartMeService.smartMeObservable("A");
         Observable<BigDecimal> smartMeTemperatureB = SmartMeService.smartMeObservable("B");
 
+
         Disposable smartMeDisposableA = smartMeTemperatureA.subscribe(
-                messages -> System.out.println("Raumtemperatur für A ist " + messages + "°C")
+                messages -> System.out.println("A:" + messages + "°C" + ":" + Instant.now().toString())
+        );
+        Disposable smartMeDisposableB = smartMeTemperatureB.subscribe(
+                messages -> System.out.println("B:" + messages + "°C" + ":" + Instant.now().toString())
         );
 
+
         Disposable hueLightIsOnDisposable = hueLightIsOn.subscribe(
-                stateChange -> System.out.println("State change")
+
+                stateChange -> System.out.println("offf!!!!")
                 // get the time from the statechange
                 // compare with the current time
                 // if difference > 1h switch of the light
         );
 
-        Disposable smartMeDisposableB = smartMeTemperatureB.subscribe(
-                messages -> System.out.println("Raumtemperatur für B ist " + messages + "°C")
-        );
+        // use key press duration to switch off the lights in f.e. 1min.
 
 
         Disposable hueSwitchSDisposable = hueSwitchPressed.subscribe(
                 message -> callTelegram("Nächste Busse fähren : " + message));
 
-        System.out.println("System is running.");
 
         // Do not stop Application
         Thread.currentThread().join();
 
-        System.out.println("Shutdown");
+        System.out.println(Instant.now().toString() + ": Shutdown");
         hueSwitchSDisposable.dispose();
-        hueLightIsOnDisposable.dispose();
         smartMeDisposableA.dispose();
         smartMeDisposableB.dispose();
+        //      hueLightIsOnDisposable.dispose();
     }
 
     private static String callTelegram(String message) {

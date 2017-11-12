@@ -91,18 +91,25 @@ public class HueService {
         return lightObject.getJsonObject("state").getBoolean("on");
     }
 
-    public static Observable<HueLightState> hueLightObservable() {
-        Observable<HueLightState> sourceObsevable = Observable.interval(60, TimeUnit.SECONDS, Schedulers.io())
-                .map(tick -> HueService.currentLightState("1"))
+    public static Observable<Boolean> hueLightObservable() {
+        Observable<Boolean> hueStateChange = Observable.interval(2, TimeUnit.SECONDS, Schedulers.io())
+                .map(tick -> HueService.currentLightState("3"))
                 .doOnError(err -> System.err.println("Error retrieving hue messages"))
                 .retry()
                 .distinctUntilChanged()
-                .map(hh -> {
-                    System.out.println(hh);
-                    return hh;
-                })
+                .share();
+
+        Observable<HueLightState> stateOffEvent = hueStateChange
+                .filter(state -> !state)
                 .map(state -> new HueLightState(state));
-        return sourceObsevable;
+
+        return hueStateChange
+                .filter(state -> state)
+                .map(state -> new HueLightState(state))
+                .delay(10, TimeUnit.SECONDS)
+                .withLatestFrom(stateOffEvent, (sOn, sOff) -> {
+                    return sOff.getUpdated().isAfter(sOn.getUpdated());
+                });
     }
 
 
