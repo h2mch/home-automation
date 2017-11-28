@@ -1,7 +1,6 @@
 package ch.h2m.home.automation;
 
 import java.math.BigDecimal;
-import java.math.MathContext;
 import java.math.RoundingMode;
 import java.util.concurrent.TimeUnit;
 
@@ -15,8 +14,6 @@ import io.reactivex.Observable;
 import io.reactivex.schedulers.Schedulers;
 
 public class SmartMeService {
-
-    private final static String SMARTME_URI = "https://smart-me.com:443/api";
 
     public static Observable<BigDecimal> smartMeObservable(String deviceName) {
 
@@ -38,8 +35,9 @@ public class SmartMeService {
     private static String callSmartMe() {
         Client client = ClientBuilder.newClient();
         String authorization = PropertyStore.getInstance().getValue("smartme.authorization");
+        String uri = PropertyStore.getInstance().getValue("smartme.uri");
         Response response = client
-                .target(SMARTME_URI)
+                .target(uri)
                 .path("Devices")
                 .request()
                 .accept(MediaType.APPLICATION_JSON_TYPE)

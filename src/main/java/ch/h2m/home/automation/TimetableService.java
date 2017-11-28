@@ -1,7 +1,5 @@
 package ch.h2m.home.automation;
 
-import sun.misc.Cleaner;
-
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
@@ -23,8 +21,8 @@ public class TimetableService {
     private static final Client client = ClientBuilder.newClient();
 
     public static List<LocalDateTime> getNextTwoDepartureToBahnhof() {
-        String timetableFrom = PropertyStore.getInstance().getValue("timetable.from");
-        String timetableTo = PropertyStore.getInstance().getValue("timetable.to");
+        String timetableFrom = PropertyStore.getInstance().getValue("timetable.1.from");
+        String timetableTo = PropertyStore.getInstance().getValue("timetable.1.to");
 
         JsonObject connections = getNextTwoConnectionBetweenSternmattBahnhof(timetableFrom, timetableTo, 2);
         List<LocalDateTime> localDateTimes = new ArrayList<>();
