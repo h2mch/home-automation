@@ -16,30 +16,18 @@ public class TelegramUpdateListener {
 
             botsApi.registerBot(new TelegramLongPollingBot() {
 
-                private Optional<String> telegramBotName;
-                private Optional<String> telegramToken;
-
                 @Override
                 public String getBotToken() {
-                    return telegramToken.orElseGet(() -> {
-                        String value = PropertyStore.getInstance().getValue("telegram.token");
-                        telegramToken = Optional.ofNullable(value);
-                        return value;
-                    });
+                    return BotConfig.telegramToken();
                 }
 
                 @Override
                 public String getBotUsername() {
-                    return telegramBotName.orElseGet(() -> {
-                        String value = PropertyStore.getInstance().getValue("telegram.bot.name");
-                        telegramBotName = Optional.ofNullable(value);
-                        return value;
-                    });
+                    return BotConfig.telegramBotName();
                 }
 
                 @Override
                 public void onUpdateReceived(Update update) {
-                    System.out.println("update:" + update);
                     emitter.onNext(update);
                 }
             });
