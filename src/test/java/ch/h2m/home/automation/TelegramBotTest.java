@@ -43,6 +43,6 @@ class TelegramBotTest {
             System.out.println(update);
         });
 
-        Thread.sleep(12000);
+        Thread.sleep(1000);
     }
 }
